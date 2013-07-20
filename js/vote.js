@@ -14,18 +14,17 @@ if (!sokwanele) { var sokwanele = {}; }
  * Templates
  *************************************************************************/
 
-var tableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Constituency</th><th>% won</th><th>turnout</th></tr></thead>" +
-    "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' cid='{{id}}'>{{name}}</a></td><td class='val'>0</td><td class='val'>{{voters}}</td></tr>{{/items}}</tbody></table>";
+var tableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Constituency</th><th>% won</th><th>% turnout</th></tr></thead>" +
+    "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{won}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>";
 
 var tooltipTemplate = "<div class='tooltipview'><h3>{{name}}</h3><table class='resultstable'><thead><tr>" +
-    "<th class='name'>Party</th><th>Votes</th></tr></thead><tbody>{{#items}}<tr><td class='name'>{{name}}</td>" +
+    "<th colspan='2' class='name'>Party</th><th>Votes</th></tr></thead><tbody>{{#items}}<tr>" +
+    "<td class='partytag' style='background:{{colour}}'></td><td class='name'>{{name}}</td>" +
     "<td class='val'>{{votes}}</td></tr>{{/items}}</tbody></table></div>";
 
-var detailTemplate = "<h3>{{name}}</h3><table class='detailtable'><tbody>{{#items}}"+
+var detailTemplate = "<div id='detailchart'></div><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4><table class='detailtable'><tbody>{{#items}}"+
     "<tr><td class='partytag' style='background:{{colour}}'></td><td>{{name}}</td><td>{{party}}</td>"+
     "<td>{{votes}}</td><td>{{percent}}%</td></tr>{{/items}}</tbody></table>";
-
-var presidentialTemplate = "<ol>{{#data}}<li style='border-bottom-color:{{colour}}; width:{{Score}}%'><span title='Number of votes' class='votes'>{{votes}}</span><span>{{candidate}}</span></li>{{/data}}</ol>";
 
 /************************************************************************
  * Object
@@ -41,14 +40,17 @@ sokwanele.vote = function () {
     this.constituencies = new Array();
 
     this.init = function () {
+        self.debug("init");
+        google.load("visualization", "1", {packages:["corechart"]});
         google.maps.event.addDomListener(window, 'load', self.initMap);
+        google.setOnLoadCallback(self.drawChart);
+
         $(document).ready(function () { self.ready() });
     };
 
     this.ready = function () {
         self.debug("jquery ready");
         self.initTabs();
-        self.initPresidentialResults();
     };
 
     this.commaSeparateNumber = function(val){
@@ -64,8 +66,8 @@ sokwanele.vote = function () {
             e.preventDefault();
             self.setActiveTab(this);
             self.activeRace = $(this).attr("href").replace('#','');
-            $('#PresidentialResults').css('display', self.activeRace == 'president' ? 'block' : 'none');
             self.addConstituencies();
+            self.drawChart();
             $('#detail').html('');
         });
 
@@ -78,29 +80,42 @@ sokwanele.vote = function () {
         });
     };
 
-    this.setActiveTab = function(a)
-    {
-        self.debug("tab clicked");
-        $(a).parent().parent().find("a").removeClass("active");
-        $(a).addClass("active");
-    }
+    this.drawChart = function() {
 
-    this.initPresidentialResults = function()
-    {
         $.ajax({
             type: 'GET',
-            url: 'api.php/results/president/' + self.activeYear,
+            url: 'api.php/results/party/' + self.activeRace + '/' + self.activeYear,
             dataType: "json",
             success: function(e) {
-                $('#PresidentialResults').html(Mustache.render(presidentialTemplate, e));
-                $('#PresidentialResults li').each(function(index, value) {
-                    $(this).find('.votes').html(self.commaSeparateNumber($(this).find('.votes').html()));
-                });
+                if (e.data)
+                {
+                    var headingArray = ['Year'];
+                    var voteColors = [];
+                    var valueArray = [self.activeYear];
+                    $.each(e.data, function(i, item) {
+                        headingArray.push(item.name);
+                        valueArray.push(parseInt(item.votes));
+                        voteColors.push(item.colour);
+                    });
+
+                    var data = google.visualization.arrayToDataTable([headingArray, valueArray]);
+                    var options = { animation: {duration:100}, width:976, height:100, colors: voteColors, legend: {position:'top'}};
+                    var chart = new google.visualization.BarChart(document.getElementById('ResultsChart'));
+                    chart.draw(data, options);
+                }
             },
             error: function(jqXHR, textStatus, errorThrown){
                 self.debug('api error: ' + textStatus);
             }
         });
+
+    }
+
+    this.setActiveTab = function(a)
+    {
+        self.debug("tab clicked");
+        $(a).parent().parent().find("a").removeClass("active");
+        $(a).addClass("active");
     }
 
     this.initMap = function () {
@@ -130,8 +145,10 @@ sokwanele.vote = function () {
 
         google.maps.event.addListener(self.map,"maptypeid_changed",function(){
             self.activeYear = self.map.getMapTypeId();
-            $('h1').html(self.activeYear + ' election results');
+            $('h1').html('Zimbabwe Election ' + self.activeYear);
+            $('#tabhouselist').css('display', (self.activeYear=='2013' ? 'block' : 'none') );
             self.addConstituencies();
+            self.drawChart();
         });
 
         $('#tooltip').poshytip({
@@ -195,7 +212,7 @@ sokwanele.vote = function () {
         $('#tablecolumn3').html(Mustache.render(tableTemplate, col3Data));
 
         $('.resultstable .name a').click(function(e){
-            self.getConstituencyResults($(this).html(), $(this).attr('cid'));
+            self.getConstituencyResults($(this).attr('cid'), $(this).html(), $(this).attr('turnout'));
             e.preventDefault();
         });
     }
@@ -225,7 +242,7 @@ sokwanele.vote = function () {
 
         google.maps.event.addListener(polygon,"click",function(e){
             //this.setOptions({fillOpacity: "0.8"});
-            self.getConstituencyResults(c.name, c.id);
+            self.getConstituencyResults(c.id, c.name, c.turnout);
         });
 
         google.maps.event.addListener(polygon,"mouseover",function(e){
@@ -243,15 +260,28 @@ sokwanele.vote = function () {
         self.polygons.push(polygon);
     }
 
-    this.getConstituencyResults = function(name, id)
+    this.getConstituencyResults = function(id, name, turnout, voters)
     {
         $.ajax({
             type: 'GET',
             url: 'api.php/results/' + self.activeRace + '/' + self.activeYear + '/' + id,
             dataType: "json",
             success: function(e) {
-                var data = {name: name, items: e.data }
+                var data = {name: name, turnout: turnout, voters: voters, items: e.data }
                 $('#detail').html(Mustache.render(detailTemplate, data));
+
+                var pieDataArray = [['Candidate','Votes']];
+                var pieColors = [];
+                $.each(e.data, function(i, item) {
+                    pieDataArray.push([item.name, parseInt(item.votes)]);
+                    pieColors.push(item.colour);
+                });
+
+                var options = { width:200, colors: pieColors, legend: {position:'none'}};
+
+                var pieData = google.visualization.arrayToDataTable(pieDataArray);
+                new google.visualization.PieChart(document.getElementById('detailchart')).
+                    draw(pieData, options);
             },
             error: function(jqXHR, textStatus, errorThrown){
                 self.debug('api error: ' + textStatus);

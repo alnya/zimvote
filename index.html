@@ -4,7 +4,9 @@
     <title></title>
     <link type="text/css" rel="stylesheet" href="css/global.css"/>
     <link type="text/css" rel="stylesheet" href="css/tip-twitter/tip-twitter.css"/>
+
     <script language="javascript" src="js/jquery-2.0.2.min.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
     <script language="javascript" src="js/moustache.js"></script>
     <script language="javascript" src="js/jquery.poshytip.min.js"></script>
@@ -15,39 +17,42 @@
 <body>
     <div id="wrapborder">
         <div id="header">
-            <h1>2008 Election Results</h1>
+            <h1>Zimbabwe Election 2013</h1>
             <ol id="Tabs" class="clearfix container">
-                <li><a class="active" href="#president">President</a></li>
-                <li><a href="#senate">Senate</a></li>
-                <li><a href="#house">House</a></li>
-                <li><a href="#battleground">Battleground</a></li>
+                <li id='tabpresident'><a class="active" href="#president">President</a></li>
+                <li id='tabsenate'><a href="#senate">Senate</a></li>
+                <li id='tabhouse'><a href="#house">House</a></li>
+                <li id='tabhouselist'><a href="#houselist">House List</a></li>
+                <li id='tabbattleground'><a href="#battleground">Battleground</a></li>
             </ol>
-        </div>
-        <div id="topcontent"></div>
-        <div id="PresidentialResults" class="clearfix container">
-            <!-- populated from AJAX call -->
         </div>
         <div class="clearfix container content_frame">
-            <ol id="StagePicker">
-                <li><a class="active" href="#map">Map</a></li>
-                <li><a href="#table">Table</a></li>
-            </ol>
-            <div id="stage" class="content">
-                <div id="loading"><img src="css/img/loading.gif"/></div>
-                <div id="map" class="tab clearfix">
-                    <div id="map-canvas"></div>
-                </div>
-                <div id="table" class="tab clearfix">
-                    <div id="tablecolumn1" class="column"></div>
-                    <div id="tablecolumn2" class="column"></div>
-                    <div id="tablecolumn3" class="column"></div>
+            <div id="ResultsChart" class="clearfix container">
+                <!-- populated from AJAX call -->
+            </div>
+            <div class="clearfix">
+                <ol id="StagePicker">
+                    <li><a class="active" href="#map">Map</a></li>
+                    <li><a href="#table">Table</a></li>
+                </ol>
+                <div id="stage" class="content">
+                    <div id="loading"><img src="css/img/loading.gif"/></div>
+                    <div id="map" class="tab clearfix">
+                        <div id="map-canvas"></div>
+                    </div>
+                    <div id="table" class="tab clearfix">
+                        <div id="tablecolumn1" class="column"></div>
+                        <div id="tablecolumn2" class="column"></div>
+                        <div id="tablecolumn3" class="column"></div>
+                    </div>
                 </div>
             </div>
+            <div id="detail" class="clearfix">
+                <!-- populated from AJAX call -->
+            </div>
         </div>
-        <div id="detail" class="clearfix">
+        <br/>
 
-        </div>
-        <div class="content_footer"></div>
     </div>
     <div id="tooltip"></div>
 </body>

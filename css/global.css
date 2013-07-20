@@ -1,11 +1,9 @@
 html, body
 {
-    background-color: #911D00;
-    background-image: url("img/bg.png");
-    background-repeat: repeat-x;
+    background-color: #fff;
     border: 0 none;
-    color: #F9ECBA;
-    font-family: 'Lucida Grande','Lucida Sans','Lucida Sans Unicode',Tahoma,Sans-Serif;
+    color: #333;
+    font-family: Helvetica, Arial, sans-serif;
     font-size: 11px;
     height: 100%;
     margin: 0;
@@ -25,52 +23,41 @@ html, body
 #wrapborder {
     margin: 0 auto;
     width: 980px;
-    background-image: url("img/top_glow2.png");
-    background-position: center top;
-    background-repeat: no-repeat;
     position:relative;
+
 }
 
 #header
 {
-    height: 100px;
+    height: 119px;
     position: relative;
 }
 
+#ResultsChart
+{
+    padding:16px 0px;
+}
+
 .content {
-    background-image: url("img/content_bg.gif");
     background-repeat: repeat-y;
-    color: #35332E;
 }
 
 .content_frame
 {
-    background-color: #F0D7A1;
-}
-
-
-#topcontent {
-    background-image: url("img/top_shadow.png");
-    background-repeat: repeat-x;
-    height: 32px;
-}
-
-.content_footer {
-    background-image: url("img/content_footer.png");
-    height: 30px;
-    margin-bottom: 20px;
+    border:2px solid #5D5B51;
 }
 
 h1, h2, h3, legend
  {
-     font-family: 'Newhouse','Lucida Sans','Lucida Sans Unicode','Arial',sans-serif;
+     font-family: Arial Black, Helvetica, Arial, sans-serif;
      letter-spacing: 4px;
      text-transform: uppercase;
+	 color: #A10000;
  }
 
-h1 {font-size: 32px; padding-top:24px;}
+h1 {font-size: 230%;line-height: 120%; font-weight: bold; margin: 0; padding-top: 40px;}
 h2, legend {font-size: 20px; margin: 16px;}
-h3 {font-size: 16px; color:#BD2500; margin:0px }
+h3 {font-size: 16px; color:#A10000; margin:0px }
 /* Tabs */
 
 #Tabs
@@ -79,8 +66,6 @@ h3 {font-size: 16px; color:#BD2500; margin:0px }
     margin: 10px 0;
     padding: 0 0 0 16px;
     height:38px;
-    position:absolute;
-    bottom: -32px;
 }
 
 #Tabs li {
@@ -91,12 +76,16 @@ h3 {font-size: 16px; color:#BD2500; margin:0px }
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
-    width: 200px;
+    width: 175px;
     line-height:38px;
+	border: 1px solid #5D5B51;
+	border-bottom: none;
+	margin: 0px 5px;
+    background-color:#FDCC09;
 }
 
 #Tabs li a {
-    color:#F0D7A1;
+    color:#5D5B51;
     display: block;
     text-decoration:none;
 }
@@ -106,46 +95,18 @@ h3 {font-size: 16px; color:#BD2500; margin:0px }
 }
 
 #Tabs li a.active {
-    color:#BD2500;
-    background:#F0D7A1;
+    color:#fff;
+    background:#5D5B51;
     padding-right:1px;
 }
 
-#PresidentialResults ol
-{
-    margin: 0;
-    padding: 0;
-    height:60px;
-    background:#F0D7A1;
-}
-
-#PresidentialResults li
-{
-    float:left;
-    list-style-type: none;
-    border-bottom: 4px solid;
-    color:#807561;
-    font-size:13px;
-}
-
-#PresidentialResults span
-{
-    padding-left:8px;
-}
-
-#PresidentialResults span.votes
-{
-    font-size:24px;
-    display:block;
-    line-height: 0.8em;
-    color:#BD2500;
-}
+#Tabs #tabhouselist {display: none; }
 
 /* Stage */
 #StagePicker
 {
     position:absolute;
-    width:150px;
+    width:137px;
     left:-12px;
     padding:0;
     margin:0
@@ -166,26 +127,27 @@ h3 {font-size: 16px; color:#BD2500; margin:0px }
     display: block;
     text-decoration:none;
     font-weight: bold;
-    color:#BD2500;
-    background: url(img/nav.png) no-repeat;
-    font-family: 'Newhouse','Lucida Sans','Lucida Sans Unicode','Arial',sans-serif;
+    color:#fff;
+    background: #5D5B51;
     letter-spacing: 4px;
     text-transform: uppercase;
 }
 
 #StagePicker li a.active
 {
-    background-position: 0px -56px;
-    color:#F0D7A1;
+    background: #A10000;
+    color:#fff;
 }
 
 #stage
 {
     width:847px;
+    margin-right:4px;
     float:right;
     overflow:hidden;
     position:relative;
     min-height:600px;
+    border:2px solid #A10000;
 }
 
 #loading
@@ -222,7 +184,6 @@ h3 {font-size: 16px; color:#BD2500; margin:0px }
 
 #detail
 {
-    background:#F0D7A1;
     padding:20px;
 }
 
@@ -239,9 +200,15 @@ h3 {font-size: 16px; color:#BD2500; margin:0px }
     padding:8px;
 }
 
-.partytag
+.detailtable tbody td.partytag,
+.resultstable tbody td.partytag
 {
-    width:20px;
+    width:8px;
+    padding:0px;
+}
+
+#detailchart {
+    float:right;
 }
 
 #table
@@ -284,36 +251,19 @@ h3 {font-size: 16px; color:#BD2500; margin:0px }
     text-align: left;
 }
 
+.resultstable .name a
+{
+   text-decoration: none;
+    display:block;
+    color:#333;
+}
+
 .resultstable .val
 {
    background:#AAAAAA;
     text-align: center;
     color:#fff;
     padding:0 4px;
-}
-
-#BattlegroundStateWatch
-{
-    margin:0; padding:0;
-    margin-bottom:20px;
-}
-
-#BattlegroundStateWatch li
-{
-    list-style: none;
-    margin:0px;
-    width:20.2%;
-    float:left;
-    margin-bottom:8px;
-    margin-left:16px;
-    color: #807561;
-    background-color: #FEF4D2;
-    border: 5px solid #F0D6A7;
-    font-size: 14px;
-    line-height: 1.5;
-    margin-bottom: 30px;
-    padding: 8px;
-
 }
 
 .tooltipview h2
