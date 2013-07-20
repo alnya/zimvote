@@ -69,29 +69,32 @@ function getPartyResults($race, $year) {
     {
         case "president":
             $sql = "SELECT sum(r.zec_votes) AS votes,
-                    ((sum(r.zec_votes) / (select sum(t.zec_votes) FROM presidential_results t)) * 100) AS Percent,
+                    ((sum(r.zec_votes) / (select sum(t.zec_votes) FROM presidential_results t where t.year = :year )) * 100) AS Percent,
                     p.colour AS colour, concat(m.mp_firstname,' ',m.mp_surname) AS name
-                    from presidential_results r join mps m on r.mp_id = m.mp_id
+                    from mps m
+                    left outer join presidential_results r on r.mp_id = m.mp_id AND r.year = :year
                     join parties p on p.party_id = m.party_id
-                    where r.year = :year group by r.mp_id
+                    where m.constit_id = 0 AND m.year = :year group by m.mp_id
                     order by r.zec_votes desc";
             break;
         case "house":
-            $sql = "SELECT sum(r.zec_votes) AS votes,
-                    ((sum(r.zec_votes) / (select sum(t.zec_votes) FROM presidential_results t)) * 100) AS Percent,
-                    p.colour AS colour, p.party_name AS name
-                    from house_results r join mps m on r.mp_id = m.mp_id
-                    join parties p on p.party_id = m.party_id
-                    where r.year = :year group by m.party_id
-                    order by r.zec_votes desc";
+            $sql = "select count(q.constit_id) as votes, q.name, q.colour from (select c.constit_id,
+                    (SELECT p.colour FROM house_results r join mps m on r.mp_id = m.mp_id join parties p on
+                    p.party_id = m.party_id where r.constit_id = c.constit_id and r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as colour,
+                    (SELECT p.party_name FROM house_results r join mps m on r.mp_id = m.mp_id join parties p on
+                    p.party_id = m.party_id where r.constit_id = c.constit_id and r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as name
+                    from constituencies c) q
+                    group by q.name";
             break;
         case "senate":
-            $sql = "SELECT sum(r.zec_votes) AS votes,
-                    ((sum(r.zec_votes) / (select sum(t.zec_votes) FROM presidential_results t)) * 100) AS Percent,
-                    p.colour AS colour, p.party_name AS name
-                    from senators r join parties p on p.party_id = r.party_id
-                    where r.year = :year group by r.party_id
-                    order by r.zec_votes desc";
+            $sql = "select count(q.senate_id) as votes, q.name, q.colour from (select s.senate_id,
+                    (SELECT p.colour FROM senators r join parties p on
+                    p.party_id = r.party_id where r.senate_id = s.senate_id ORDER BY r.zec_votes DESC LIMIT 1) as colour,
+                    (SELECT p.party_name FROM senators r join parties p on
+                    p.party_id = r.party_id where r.senate_id = s.senate_id ORDER BY r.zec_votes DESC LIMIT 1) as name
+                    from senators s
+                    where s.year = :year) q
+                    group by q.name";
             break;
     }
 
@@ -117,33 +120,32 @@ function getConstituencies($race, $year) {
             $sql = "select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
                 CEIL((v.votes / c.registered_voters) * 100) as turnout,
                 (SELECT p.colour FROM presidential_results r join mps m on r.mp_id = m.mp_id join parties p on
-                p.party_id = m.party_id where r.constit_id = c.constit_id ORDER BY r.zec_votes DESC LIMIT 1) as colour,
-                CEIL(((SELECT r.zec_votes FROM presidential_results r where r.constit_id = c.constit_id ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
+                p.party_id = m.party_id where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as colour,
+                CEIL(((SELECT r.zec_votes FROM presidential_results r where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
                 from constituencies c
                 inner join constituencykml k on c.constit_name = k.constituency
-                join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM presidential_results q GROUP BY q.constit_id) v on v.constit_id = c.constit_id
-                WHERE c.year = :year
+                left outer join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM presidential_results q WHERE q.year = :year GROUP BY q.constit_id) v on v.constit_id = c.constit_id
                 ORDER BY constit_name";
             break;
         case "battleground":
             $sql = "select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
                 CEIL((v.votes / c.registered_voters) * 100) as turnout,
                 (SELECT p.colour FROM house_results r join mps m on r.mp_id = m.mp_id join parties p on
-                p.party_id = m.party_id where r.constit_id = c.constit_id ORDER BY r.zec_votes DESC LIMIT 1) as colour,
-                CEIL(((SELECT r.zec_votes FROM house_results r where r.constit_id = c.constit_id ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
+                p.party_id = m.party_id where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as colour,
+                CEIL(((SELECT r.zec_votes FROM house_results r where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
                 from constituencies c inner join constituencykml k on c.constit_name = k.constituency
-                join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM house_results q GROUP BY q.constit_id) v on v.constit_id = c.constit_id
-                WHERE c.year = :year ORDER BY constit_name";
+                join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM house_results q WHERE q.year = :year GROUP BY q.constit_id) v on v.constit_id = c.constit_id
+                ORDER BY constit_name";
             break;
         case "house":
             $sql = "select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
                 CEIL((v.votes / c.registered_voters) * 100) as turnout,
                 (SELECT p.colour FROM house_results r join mps m on r.mp_id = m.mp_id join parties p on
-                p.party_id = m.party_id where r.constit_id = c.constit_id ORDER BY r.zec_votes DESC LIMIT 1) as colour,
-                CEIL(((SELECT r.zec_votes FROM house_results r where r.constit_id = c.constit_id ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
+                p.party_id = m.party_id where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as colour,
+                CEIL(((SELECT r.zec_votes FROM house_results r where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
                 from constituencies c inner join constituencykml k on c.constit_name = k.constituency
-                join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM house_results q GROUP BY q.constit_id) v on v.constit_id = c.constit_id
-                WHERE c.year = :year ORDER BY constit_name";
+                left outer join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM house_results q WHERE q.year = :year GROUP BY q.constit_id) v on v.constit_id = c.constit_id
+                ORDER BY constit_name";
             break;
         case "senate":
             $sql = "select s.senate_id as id, s.constituency as name, SUM(s.zec_votes) as voters, k.geometry,
@@ -176,18 +178,18 @@ function getResultsSummary($race, $year, $constituency) {
         case "president":
             $sql = "select concat(m.mp_firstname, ' ', m.mp_surname) as name, p.colour, r.zec_votes as votes
                 from mps m
-                left outer join presidential_results r on r.mp_id = m.mp_id
+                left outer join presidential_results r on r.mp_id = m.mp_id AND r.constit_id = :constituency
                 inner join parties p on m.party_id = p.party_id
-                WHERE m.constit_id = 0 AND m.year = :year AND r.year = :year AND r.constit_id = :constituency
+                WHERE m.constit_id = 0 AND m.year = :year
                 ORDER BY r.zec_votes DESC";
             break;
         case "battleground":
         case "house":
             $sql = "select p.party_name as name, p.colour, r.zec_votes as votes
                 from mps m
-                left outer join house_results r on r.mp_id = m.mp_id
+                left outer join house_results r on r.mp_id = m.mp_id AND r.constit_id = :constituency
                 inner join parties p on m.party_id = p.party_id
-                WHERE r.year = :year AND m.year = :year AND m.constit_id = :constituency
+                WHERE m.constit_id = :constituency AND m.year = :year
                 ORDER BY r.zec_votes DESC";
             break;
         case "senate":
@@ -221,9 +223,9 @@ function getResults($race, $year, $constituency) {
             $sql = "select concat(m.mp_firstname, ' ', m.mp_surname) as name, p.party_name as party, r.zec_votes as votes, p.colour,
                 CEIL(r.zec_votes / (SELECT SUM(q.zec_votes) FROM presidential_results q WHERE q.year = :year AND q.constit_id = :constituency) * 100) as percent
                 from mps m
-                left outer join presidential_results r on r.mp_id = m.mp_id
+                left outer join presidential_results r on r.mp_id = m.mp_id AND r.year = :year AND r.constit_id = :constituency
                 inner join parties p on m.party_id = p.party_id
-                WHERE m.constit_id = 0 AND m.year = :year AND r.year = :year AND r.constit_id = :constituency
+                WHERE m.constit_id = 0 AND m.year = :year
                 ORDER BY r.zec_votes DESC";
             break;
         case "battleground":
@@ -231,9 +233,9 @@ function getResults($race, $year, $constituency) {
             $sql = "select concat(m.mp_firstname, ' ', m.mp_surname) as name, p.party_name as party, r.zec_votes as votes,p.colour,
                 CEIL(r.zec_votes / (SELECT SUM(q.zec_votes) FROM house_results q WHERE q.year = :year AND q.constit_id = :constituency) * 100) as percent
                 from mps m
-                left outer join house_results r on r.mp_id = m.mp_id
+                left outer join house_results r on r.mp_id = m.mp_id AND r.year = :year AND r.constit_id = :constituency
                 inner join parties p on m.party_id = p.party_id
-                WHERE r.year = :year AND m.year = :year AND m.constit_id = :constituency
+                WHERE m.constit_id = :constituency AND m.year = :year
                 ORDER BY r.zec_votes DESC";
             break;
         case "senate":

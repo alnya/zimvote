@@ -22,7 +22,8 @@ var tooltipTemplate = "<div class='tooltipview'><h3>{{name}}</h3><table class='r
     "<td class='partytag' style='background:{{colour}}'></td><td class='name'>{{name}}</td>" +
     "<td class='val'>{{votes}}</td></tr>{{/items}}</tbody></table></div>";
 
-var detailTemplate = "<div id='detailchart'></div><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4><table class='detailtable'><tbody>{{#items}}"+
+var detailTemplate = "<div id='detailchart'></div><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4>" +
+    "<table class='detailtable'><tbody>{{#items}}"+
     "<tr><td class='partytag' style='background:{{colour}}'></td><td>{{name}}</td><td>{{party}}</td>"+
     "<td>{{votes}}</td><td>{{percent}}%</td></tr>{{/items}}</tbody></table>";
 
@@ -36,7 +37,7 @@ sokwanele.vote = function () {
     this.activeRace = 'president';
     this.activeYear = '2008';
     this.polygons = new Array();
-    this.defaultColor = '#ccc';
+    this.defaultColor = '#999999';
     this.constituencies = new Array();
 
     this.init = function () {
@@ -91,11 +92,17 @@ sokwanele.vote = function () {
                 {
                     var headingArray = ['Year'];
                     var voteColors = [];
-                    var valueArray = [self.activeYear];
+                    var valueArray = [self.activeRace == 'president' ? 'Votes' : 'Seats'];
                     $.each(e.data, function(i, item) {
                         headingArray.push(item.name);
                         valueArray.push(parseInt(item.votes));
-                        voteColors.push(item.colour);
+                        if (item.colour){
+                            voteColors.push(item.colour);
+                        }
+                        else
+                        {
+                            voteColors.push('#333');
+                        }
                     });
 
                     var data = google.visualization.arrayToDataTable([headingArray, valueArray]);
@@ -229,7 +236,7 @@ sokwanele.vote = function () {
             XY = geomAry[j].split(',');
             points.push( new google.maps.LatLng(parseFloat(XY[1]),parseFloat(XY[0]))) ;
         }
-        var polyColor = c.colour != '' ? c.colour : self.defaultColor;
+        var polyColor = c.colour != '' && c.colour != null ? c.colour : self.defaultColor;
         var polygon = new google.maps.Polygon({
             'paths':points,
             'strokeColor': "#fff",
