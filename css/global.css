@@ -1,0 +1,350 @@
+html, body
+{
+    background-color: #911D00;
+    background-image: url("img/bg.png");
+    background-repeat: repeat-x;
+    border: 0 none;
+    color: #F9ECBA;
+    font-family: 'Lucida Grande','Lucida Sans','Lucida Sans Unicode',Tahoma,Sans-Serif;
+    font-size: 11px;
+    height: 100%;
+    margin: 0;
+    margin-top:-10px;
+    padding: 0;
+    width: 100%;
+}
+
+.clearfix:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
+#wrapborder {
+    margin: 0 auto;
+    width: 980px;
+    background-image: url("img/top_glow2.png");
+    background-position: center top;
+    background-repeat: no-repeat;
+    position:relative;
+}
+
+#header
+{
+    height: 100px;
+    position: relative;
+}
+
+.content {
+    background-image: url("img/content_bg.gif");
+    background-repeat: repeat-y;
+    color: #35332E;
+}
+
+.content_frame
+{
+    background-color: #F0D7A1;
+}
+
+
+#topcontent {
+    background-image: url("img/top_shadow.png");
+    background-repeat: repeat-x;
+    height: 32px;
+}
+
+.content_footer {
+    background-image: url("img/content_footer.png");
+    height: 30px;
+    margin-bottom: 20px;
+}
+
+h1, h2, h3, legend
+ {
+     font-family: 'Newhouse','Lucida Sans','Lucida Sans Unicode','Arial',sans-serif;
+     letter-spacing: 4px;
+     text-transform: uppercase;
+ }
+
+h1 {font-size: 32px; padding-top:24px;}
+h2, legend {font-size: 20px; margin: 16px;}
+h3 {font-size: 16px; color:#BD2500; margin:0px }
+/* Tabs */
+
+#Tabs
+{
+    list-style: none outside none;
+    margin: 10px 0;
+    padding: 0 0 0 16px;
+    height:38px;
+    position:absolute;
+    bottom: -32px;
+}
+
+#Tabs li {
+    display: inline;
+    float: left;
+    font-size: 16px;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+    width: 200px;
+    line-height:38px;
+}
+
+#Tabs li a {
+    color:#F0D7A1;
+    display: block;
+    text-decoration:none;
+}
+
+#Tabs li a:hover {
+    text-decoration: underline;
+}
+
+#Tabs li a.active {
+    color:#BD2500;
+    background:#F0D7A1;
+    padding-right:1px;
+}
+
+#PresidentialResults ol
+{
+    margin: 0;
+    padding: 0;
+    height:60px;
+    background:#F0D7A1;
+}
+
+#PresidentialResults li
+{
+    float:left;
+    list-style-type: none;
+    border-bottom: 4px solid;
+    color:#807561;
+    font-size:13px;
+}
+
+#PresidentialResults span
+{
+    padding-left:8px;
+}
+
+#PresidentialResults span.votes
+{
+    font-size:24px;
+    display:block;
+    line-height: 0.8em;
+    color:#BD2500;
+}
+
+/* Stage */
+#StagePicker
+{
+    position:absolute;
+    width:150px;
+    left:-12px;
+    padding:0;
+    margin:0
+
+}
+
+#StagePicker li
+{
+   list-style: none;
+    margin:0px;
+    margin-bottom:8px;
+}
+
+#StagePicker li a
+{
+    padding:16px;
+    font-size: 16px;
+    display: block;
+    text-decoration:none;
+    font-weight: bold;
+    color:#BD2500;
+    background: url(img/nav.png) no-repeat;
+    font-family: 'Newhouse','Lucida Sans','Lucida Sans Unicode','Arial',sans-serif;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+
+#StagePicker li a.active
+{
+    background-position: 0px -56px;
+    color:#F0D7A1;
+}
+
+#stage
+{
+    width:847px;
+    float:right;
+    overflow:hidden;
+    position:relative;
+    min-height:600px;
+}
+
+#loading
+{
+    width:847px;
+    height:100%;
+    position:absolute;
+    background:#fff;
+    z-index: 999;
+    opacity: 0.85;
+    display: none;
+}
+
+#loading img
+{
+    left: 45%;
+    position: absolute;
+    top: 40%;
+}
+
+#stage .tab
+{
+    width:847px;
+    min-height:600px;
+    position:absolute;
+}
+
+#map
+{
+
+}
+
+#map-canvas { height: 600px }
+
+#detail
+{
+    background:#F0D7A1;
+    padding:20px;
+}
+
+.detailtable thead tr th
+{
+    font-size:13px;
+    font-weight: bold;
+}
+
+.detailtable tbody td
+{
+    font-size:16px;
+    color:#807561;
+    padding:8px;
+}
+
+.partytag
+{
+    width:20px;
+}
+
+#table
+{
+    left:847px;
+}
+
+#table .column
+{
+    float:left;
+    margin-left:24px;
+}
+
+.resultstable
+{
+    margin:0;
+    padding:0;
+}
+
+.resultstable thead tr th
+{
+    font-size:11px;
+    font-weight: bold;
+    border-bottom:4px solid #000;
+}
+
+.resultstable tbody tr
+{
+   line-height: 16px;
+}
+
+.resultstable tbody tr:hover
+{
+    background:#f1f1f1;
+}
+
+.resultstable .name
+{
+    width:130px;
+    text-align: left;
+}
+
+.resultstable .val
+{
+   background:#AAAAAA;
+    text-align: center;
+    color:#fff;
+    padding:0 4px;
+}
+
+#BattlegroundStateWatch
+{
+    margin:0; padding:0;
+    margin-bottom:20px;
+}
+
+#BattlegroundStateWatch li
+{
+    list-style: none;
+    margin:0px;
+    width:20.2%;
+    float:left;
+    margin-bottom:8px;
+    margin-left:16px;
+    color: #807561;
+    background-color: #FEF4D2;
+    border: 5px solid #F0D6A7;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 30px;
+    padding: 8px;
+
+}
+
+.tooltipview h2
+{
+    font-size:11px;
+    font-weight: bold;
+    border-bottom:4px solid #000;
+}
+
+.tooltipview ul
+{
+    margin:0; padding:0;
+}
+
+.tooltipview li
+{
+    list-style: none;
+    font-size:10px;
+}
+
+fieldset
+{
+    border:0px;
+}
+
+fieldset p.buttonrow {padding-left:200px;}
+
+fieldset label
+{
+    width:200px;
+    float:left;
+    margin-right:8px;
+    text-align:right;
+}
