@@ -173,6 +173,7 @@ h3 {font-size: 16px; color:#A10000; margin:0px }
     width:847px;
     min-height:600px;
     position:absolute;
+    padding: 10px 0;
 }
 
 #map
