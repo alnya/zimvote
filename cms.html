@@ -3,34 +3,25 @@
 <head>
     <title></title>
     <link type="text/css" rel="stylesheet" href="css/global.css"/>
-    <script language="javascript" src="js/jquery-2.0.2.min.js"></script>
-    <script language="javascript" src="js/moustache.js"></script>
-    <script language="javascript" src="js/cms.js"></script>
 </head>
 <body>
 <div id="wrapborder">
     <div id="header">
         <h1>Election CMS</h1>
-        <ol id="Tabs" class="clearfix container">
-            <li><a class="active" href="#president">Candidates</a></li>
-            <li><a href="#senate">Results</a></li>
-        </ol>
     </div>
     <div id="topcontent"></div>
 
-    <div class="clearfix container content_frame">
+    <div class="clearfix container content_frame" style="padding:16px;">
 
-        <div id="stage" class="content">
-            <form id="candidateform">
-                <fieldset>
-                    <legend>Candidate Details</legend>
-                    <p><label for="firstname">Firstname</label><input type="text" id="firstname" name="firstname"/></p>
-                    <p><label for="surname">Surname</label><input type="text" id="surname" name="surname"/></p>
-                    <p><label for="party">Party</label><select id="party" name="party"></select></p>
-                    <p><label for="constituency">Constituency</label><select id="constituency" name="constituency"></select></p>
-                    <p class="buttonrow"><input type="button" value="Save"/></p>
-                </fieldset>
-            </form>
+            <form action="cms.php" method="post" enctype="multipart/form-data">
+                <p>
+                    <Input type ='Radio' Name ='type' value= 'president'>President
+                    <Input type ='Radio' Name ='type' value= 'house'>House
+                </p>
+                <p>
+                    <label for="csv">CSV:</label><input type="file" id="csv" name="csv" />
+                </p>
+                <input type="submit" name="submit" value="Submit">
         </div>
     </div>
     <div class="content_footer"></div>
