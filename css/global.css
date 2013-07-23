@@ -100,7 +100,10 @@ h3 {font-size: 16px; color:#A10000; margin:0px }
     padding-right:1px;
 }
 
-#Tabs #tabhouselist {display: none; }
+#Tabs #tabhouselist,
+#Tabs #tabbattleground {
+    display: none;
+}
 
 /* Stage */
 #StagePicker
@@ -208,7 +211,7 @@ h3 {font-size: 16px; color:#A10000; margin:0px }
     padding:0px;
 }
 
-#detailchart {
+#detailchart, #detailswing {
     float:right;
 }
 

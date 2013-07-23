@@ -10,6 +10,7 @@ $app->get('/constituencies/:race/:year', 'getConstituencies');
 $app->get('/resultssummary/:race/:year/:constituency',  'getResultsSummary');
 $app->get('/results/party/:race/:year',  'getPartyResults');
 $app->get('/results/:race/:year/:constituency',  'getResults');
+$app->get('/swing/:race/:constituency',  'getSwing');
 
 //$app->post('/candidate', 'addCandidate');
 //$app->put('/candidate/:id', 'updateCandidate');
@@ -77,6 +78,7 @@ function getPartyResults($race, $year) {
                     where m.constit_id = 0 AND m.year = :year group by m.mp_id
                     order by r.zec_votes desc";
             break;
+        case "battleground":
         case "house":
             $sql = "select count(q.constit_id) as votes, q.name, q.colour from (select c.constit_id,
                     (SELECT p.colour FROM house_results r join mps m on r.mp_id = m.mp_id and m.year = :year join parties p on
@@ -139,14 +141,18 @@ function getConstituencies($race, $year) {
                 ORDER BY constit_name";
             break;
         case "battleground":
-            $sql = "select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
+            $battlegroundMargin = 5;
+
+            $sql = "select id, name, voters, region_id, geometry, turnout, colour, won, margin from (select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
                 CEIL((v.votes / c.registered_voters) * 100) as turnout,
                 (SELECT p.colour FROM house_results r join mps m on r.mp_id = m.mp_id join parties p on
-                p.party_id = m.party_id where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as colour,
-                CEIL(((SELECT r.zec_votes FROM house_results r where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
+                p.party_id = m.party_id where r.zec_votes > 0 and  r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as colour,
+                CEIL(((SELECT a.zec_votes FROM house_results a where a.zec_votes > 0 and a.constit_id = c.constit_id AND a.year = :year ORDER BY a.zec_votes DESC LIMIT 1) / v.votes) * 100) as won,
+                CEIL(((SELECT b.zec_votes FROM house_results b where b.zec_votes < (SELECT a.zec_votes FROM house_results a where a.zec_votes > 0 and a.constit_id = c.constit_id AND a.year = 2008 ORDER BY a.zec_votes DESC LIMIT 1) and b.constit_id = c.constit_id AND b.year = 2008 ORDER BY b.zec_votes DESC LIMIT 1) / v.votes) * 100) as secondplace,
+                CEIL(((SELECT a.zec_votes FROM house_results a where a.zec_votes > 0 and a.constit_id = c.constit_id AND a.year = :year ORDER BY a.zec_votes DESC LIMIT 1) / v.votes) * 100) - CEIL(((SELECT b.zec_votes FROM house_results b where b.zec_votes < (SELECT a.zec_votes FROM house_results a where a.zec_votes > 0 and a.constit_id = c.constit_id AND a.year = 2008 ORDER BY a.zec_votes DESC LIMIT 1) and b.constit_id = c.constit_id AND b.year = 2008 ORDER BY b.zec_votes DESC LIMIT 1) / v.votes) * 100) as margin
                 from constituencies c inner join constituencykml k on c.constit_name = k.constituency
-                join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM house_results q WHERE q.year = :year GROUP BY q.constit_id) v on v.constit_id = c.constit_id
-                ORDER BY constit_name";
+                left outer join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM house_results q WHERE q.year = :year GROUP BY q.constit_id) v on v.constit_id = c.constit_id
+                ORDER BY constit_name) g where g.margin < ".$battlegroundMargin;
             break;
         case "house":
             $sql = "select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
@@ -294,6 +300,38 @@ function getResults($race, $year, $constituency) {
         $db = getConnection();
         $stmt = $db->prepare($sql);
         $stmt->bindParam("year", $year);
+        $stmt->bindParam("constituency", $constituency);
+        $stmt->execute();
+        $items = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $db = null;
+        writeResponse($items);
+    } catch(PDOException $e) {
+        writeError($e->getMessage());
+    }
+}
+
+function getSwing($race, $constituency) {
+
+    switch($race)
+    {
+        case "president":
+            $sql = "select a.colour, a.name, a.percent as 2008Won, b.percent as 2013Won, b.percent - a.percent as swing from
+                (select r.party as name, r.colour, r.percent from vwpresidentresults r where id = :constituency and year = 2008 order by votes desc LIMIT 1) a
+                join
+                (select r.party as name, r.colour, r.percent from vwpresidentresults r where id = :constituency and year = 2013 order by votes desc) b on a.name = b.name";
+            break;
+        case "battleground":
+        case "house":
+            $sql = "select a.colour, a.name, a.percent as 2008Won, b.percent as 2013Won, b.percent - a.percent as swing from
+                (select r.party as name, r.colour, r.percent from vwhouseresults r where id = :constituency and year = 2008 order by votes desc LIMIT 1) a
+                join
+                (select r.party as name, r.colour, r.percent from vwhouseresults r where id = :constituency and year = 2013 order by votes desc) b on a.name = b.name";
+            break;
+    }
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
         $stmt->bindParam("constituency", $constituency);
         $stmt->execute();
         $items = $stmt->fetchAll(PDO::FETCH_OBJ);

@@ -22,7 +22,7 @@ var tooltipTemplate = "<div class='tooltipview'><h3>{{name}}</h3><table class='r
     "<td class='partytag' style='background:{{colour}}'></td><td class='name'>{{name}}</td>" +
     "<td class='val'>{{votes}}</td></tr>{{/items}}</tbody></table></div>";
 
-var detailTemplate = "<div id='detailchart'></div><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4>" +
+var detailTemplate = "<div id='detailchart'></div><div id='detailswing'></div><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4>" +
     "<table class='detailtable'><tbody>{{#items}}"+
     "<tr><td class='partytag' style='background:{{colour}}'></td><td>{{name}}</td><td>{{party}}</td>"+
     "<td>{{votes}}</td><td>{{percent}}%</td></tr>{{/items}}</tbody></table>";
@@ -42,7 +42,7 @@ sokwanele.vote = function () {
 
     this.init = function () {
         self.debug("init");
-        google.load("visualization", "1", {packages:["corechart"]});
+        google.load("visualization", "1", {packages:["corechart", "gauge"]});
         google.maps.event.addDomListener(window, 'load', self.initMap);
         google.setOnLoadCallback(self.drawChart);
 
@@ -154,6 +154,7 @@ sokwanele.vote = function () {
             self.activeYear = self.map.getMapTypeId();
             $('h1').html('Zimbabwe Election ' + self.activeYear);
             $('#tabhouselist').css('display', (self.activeYear=='2013' ? 'block' : 'none') );
+            $('#tabbattleground').css('display', (self.activeYear=='2013' ? 'block' : 'none') );
             self.addConstituencies();
             self.drawChart();
         });
@@ -289,6 +290,27 @@ sokwanele.vote = function () {
                 var pieData = google.visualization.arrayToDataTable(pieDataArray);
                 new google.visualization.PieChart(document.getElementById('detailchart')).
                     draw(pieData, options);
+
+                if (self.activeYear == '2013' && (self.activeRace == 'president' || self.activeRace == 'house'))
+                {
+                    $.ajax({
+                            type: 'GET',
+                            url: 'api.php/swing/' + self.activeRace + '/' + id,
+                            dataType: "json",
+                            success: function(e) {
+
+                                // Create and populate the data table.
+                                var data = google.visualization.arrayToDataTable([
+                                    ['Label', 'Value'],
+                                    ['Swing', e.data.swing]
+                                ]);
+
+                                // Create and draw the visualization.
+                                new google.visualization.Gauge(document.getElementById('detailswing')).
+                                    draw(data, {width: 200, min: -25, max:25, redFrom: -10, redTo: 10, redColor: e.data.colour});
+                            }
+                    });
+                }
             },
             error: function(jqXHR, textStatus, errorThrown){
                 self.debug('api error: ' + textStatus);
