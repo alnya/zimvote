@@ -17,15 +17,23 @@ if (!sokwanele) { var sokwanele = {}; }
 var tableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Constituency</th><th>% won</th><th>% turnout</th></tr></thead>" +
     "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{won}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>";
 
+var PRTableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Province</th><th>seats</th><th>% turnout</th></tr></thead>" +
+    "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{votes}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>";
+
 var tooltipTemplate = "<div class='tooltipview'><h3>{{name}}</h3><table class='resultstable'><thead><tr>" +
-    "<th colspan='2' class='name'>Party</th><th>Votes</th></tr></thead><tbody>{{#items}}<tr>" +
+    "<th colspan='2' class='name'>Party</th><th>{{voteheading}}</th></tr></thead><tbody>{{#items}}<tr>" +
+    "<td class='partytag' style='background:{{colour}}'></td><td class='name'>{{name}}</td>" +
+    "<td class='val'>{{votes}}</td></tr>{{/items}}</tbody></table></div>";
+
+var tooltipBG = "<div class='tooltipview'><h3>{{name}}</h3><h4>{{margin}}% margin</h4><table class='resultstable'><thead><tr>" +
+    "<th colspan='2' class='name'>Party</th><th>percent</th></tr></thead><tbody>{{#items}}<tr>" +
     "<td class='partytag' style='background:{{colour}}'></td><td class='name'>{{name}}</td>" +
     "<td class='val'>{{votes}}</td></tr>{{/items}}</tbody></table></div>";
 
 var detailTemplate = "<div id='detailchart'></div><div id='detailswing'></div><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4>" +
     "<table class='detailtable'><tbody>{{#items}}"+
     "<tr><td class='partytag' style='background:{{colour}}'></td><td>{{name}}</td><td>{{party}}</td>"+
-    "<td>{{votes}}</td><td>{{percent}}%</td></tr>{{/items}}</tbody></table>";
+    "<td>{{votes}}</td><td>{{percent}}</td></tr>{{/items}}</tbody></table>";
 
 /************************************************************************
  * Object
@@ -39,6 +47,7 @@ sokwanele.vote = function () {
     this.polygons = new Array();
     this.defaultColor = '#999999';
     this.constituencies = new Array();
+    this.overPolygon = false;
 
     this.init = function () {
         self.debug("init");
@@ -94,7 +103,7 @@ sokwanele.vote = function () {
                     var voteColors = [];
                     var valueArray = [self.activeRace == 'president' ? 'Votes' : 'Seats'];
                     $.each(e.data, function(i, item) {
-                        headingArray.push(item.name);
+                        headingArray.push(item.name + (self.activeRace == 'president' ? ' (' + item.percent + '%)' : ''));
                         valueArray.push(parseInt(item.votes));
                         if (item.colour){
                             voteColors.push(item.colour);
@@ -140,7 +149,7 @@ sokwanele.vote = function () {
                 zoom: 7,
                 center: self.mapCenter,
                 minZoom: 7,
-                maxZoom: 10,
+                maxZoom: 11,
                 streetViewControl: false,
                 mapTypeControlOptions: {
                     mapTypeIds: ['2008', '2013']
@@ -215,9 +224,11 @@ sokwanele.vote = function () {
         var col2Data = {items: e.data.slice(colSize, colSize * 2)};
         var col3Data = {items: e.data.slice(colSize * 2, colSize * 3) };
 
-        $('#tablecolumn1').html(Mustache.render(tableTemplate, col1Data));
-        $('#tablecolumn2').html(Mustache.render(tableTemplate, col2Data));
-        $('#tablecolumn3').html(Mustache.render(tableTemplate, col3Data));
+        var template = (self.isPR()) ? PRTableTemplate : tableTemplate;
+
+        $('#tablecolumn1').html(Mustache.render(template, col1Data));
+        $('#tablecolumn2').html(Mustache.render(template, col2Data));
+        $('#tablecolumn3').html(Mustache.render(template, col3Data));
 
         $('.resultstable .name a').click(function(e){
             self.getConstituencyResults($(this).attr('cid'), $(this).html(), $(this).attr('turnout'));
@@ -256,12 +267,12 @@ sokwanele.vote = function () {
         google.maps.event.addListener(polygon,"mouseover",function(e){
             //this.setOptions({fillOpacity: "0.8"});
             $('#tooltip').poshytip("update",  "Loading...");
-
-            self.getConstituencyResultsSummary(e, c.name, c.id);
+            self.overPolygon = true;
+            self.getConstituencyResultsSummary(e, c.name, c.id, c.margin);
         });
 
         google.maps.event.addListener(polygon,"mouseout",function(){
-            //this.setOptions({fillOpacity: "0.6"});
+            self.overPolygon = false;
             $('#tooltip').poshytip("hide");
         });
 
@@ -319,12 +330,15 @@ sokwanele.vote = function () {
     }
 
 
-    this.getConstituencyResultsSummary = function(evt, name, id)
+    this.getConstituencyResultsSummary = function(evt, name, id, margin)
     {
         if (id in self.constituencies)
         {
-            $('#tooltip').poshytip("update",  self.constituencies[id]);
-            $('#tooltip').poshytip("mouseenter", evt);
+            if (self.overPolygon)
+            {
+                $('#tooltip').poshytip("update",  self.constituencies[id]);
+                $('#tooltip').poshytip("mouseenter", evt);
+            }
         }
         else
         {
@@ -333,17 +347,27 @@ sokwanele.vote = function () {
                 url: 'api.php/resultssummary/' + self.activeRace + '/' + self.activeYear + '/' + id,
                 dataType: "json",
                 success: function(e) {
-                    var data = {name: name, items: e.data }
-                    self.constituencies[id] = Mustache.render(tooltipTemplate, data);
-                    $('#tooltip').poshytip("update",  self.constituencies[id]);
-                    $('#tooltip').poshytip("mouseenter", evt);
+                    var voteheading = (self.isPR()) ? 'seats' : 'votes';
+                    var data = {name: name, margin: margin, voteheading: voteheading, items: e.data }
+                    var template  = (margin != null) ? tooltipBG : tooltipTemplate;
 
+                    self.constituencies[id] = Mustache.render(template, data);
+                    if (self.overPolygon)
+                    {
+                        $('#tooltip').poshytip("update",  self.constituencies[id]);
+                        $('#tooltip').poshytip("mouseenter", evt);
+                    }
                 },
                 error: function(jqXHR, textStatus, errorThrown){
                     self.debug('api error: ' + textStatus);
                 }
             });
         }
+    }
+
+    this.isPR = function()
+    {
+        return self.activeRace == 'houselist' || (self.activeRace == 'senate' && self.activeYear == '2013');
     }
 
     this.debug = function (myMessage) {
