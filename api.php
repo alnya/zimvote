@@ -9,6 +9,8 @@ $app->get('/parties', 'getParties');
 $app->get('/constituencies/:race/:year', 'getConstituencies');
 $app->get('/resultssummary/:race/:year/:constituency',  'getResultsSummary');
 $app->get('/results/party/:race/:year',  'getPartyResults');
+$app->get('/results/pr/:race/:year',  'getPRResults');
+
 $app->get('/results/:race/:year/:constituency',  'getResults');
 $app->get('/swing/:race/:constituency',  'getSwing');
 
@@ -89,7 +91,8 @@ function getPartyResults($race, $year) {
                     group by q.name";
             break;
         case "houselist":
-            $sql = "select p.listseats as votes, p.party as name, p.colour from vwprovinceresults p where p.year = :year";
+            $sql = "select SUM(p.listseats) as votes, p.party as name, p.colour from vwprovinceresults p where
+                    p.year = :year and p.party in (select c.party from candidates2013 c where c.province = p.id and c.seat = 'National Assembly Party List') group by p.party";
             break;
         case "senate":
             if ($year == '2008')
@@ -105,7 +108,8 @@ function getPartyResults($race, $year) {
             }
             else
             {
-                $sql = "select p.listseats as votes, p.party as name, p.colour from vwprovinceresults p where p.year = :year";
+                $sql = "select SUM(p.listseats) as votes, p.party as name, p.colour from vwprovinceresults p where
+                p.year = :year  and p.party in (select c.party from candidates2013 c where c.province = p.id and c.seat = 'Senate Party List') group by p.party";
             }
 
             break;
@@ -143,11 +147,11 @@ function getConstituencies($race, $year) {
         case "battleground":
             $sql = "select id, name, voters, region_id, geometry, turnout, won, margin,
                 case
-                    when margin > 40  then '#ADD8E6'
-                    when margin < 40 and margin > 25 then '#0087BD'
-                    when margin < 25 and margin > 10 then '#545AA7'
-                    when margin < 10 and margin > 5 then '#00008B'
-                    when margin < 5 then '#1D2951'
+                    when margin > 40  then '#CEEBEE'
+                    when margin < 40 and margin > 25 then '#9DB3E0'
+                    when margin < 25 and margin > 10 then '#6C7BD3'
+                    when margin < 10 and margin > 5 then '#3B43C5'
+                    when margin < 5 then '#0A0BB8'
                 end as colour
                 from (select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
                 CEIL((v.votes / c.registered_voters) * 100) as turnout,
@@ -224,7 +228,8 @@ function getResultsSummary($race, $year, $constituency) {
         $sql = "select r.party as name, r.colour, r.votes as votes from vwhouseresults r where id = :constituency and year = :year GROUP BY party order by votes desc";
             break;
         case "houselist":
-            $sql = "select p.party as name, p.colour, p.listseats as votes from vwprovinceresults p where p.id = :constituency and p.year = :year ORDER BY p.percent DESC";
+            $sql = "select p.party as name, p.colour, p.listseats as votes from vwprovinceresults p where
+                p.id = :constituency and p.year = :year and p.party in (select c.party from candidates2013 c where c.province = p.id and c.seat = 'National Assembly Party List') ORDER BY p.percent DESC";
             break;
         case "senate":
             if ($year == '2008') {
@@ -236,7 +241,8 @@ function getResultsSummary($race, $year, $constituency) {
             }
             else
             {
-                $sql = "select p.party as name, p.colour, p.listseats as votes from vwprovinceresults p where p.id = :constituency and p.year = :year order by votes desc";
+                $sql = "select p.party as name, p.colour, p.listseats as votes from vwprovinceresults p where
+                    p.id = :constituency and p.year = :year and p.party in (select c.party from candidates2013 c where c.province = p.id and c.seat = 'Senate Party List')  order by votes desc";
             }
             break;
     }
@@ -246,6 +252,26 @@ function getResultsSummary($race, $year, $constituency) {
         $stmt = $db->prepare($sql);
         $stmt->bindParam("year", $year);
         $stmt->bindParam("constituency", $constituency);
+        $stmt->execute();
+        $items = $stmt->fetchAll(PDO::FETCH_OBJ);
+        $db = null;
+        writeResponse($items);
+    } catch(PDOException $e) {
+        writeError($e->getMessage());
+    }
+}
+
+function getPRResults($race, $year)
+{
+    $r = $race == 'senate' ? 'Senate Party List' : 'National Assembly Party List';
+
+    $sql = "select p.id as province, p.party as name, p.colour, p.listseats as votes from vwprovinceresults p where
+            p.year = :year and p.party in (select c.party from candidates2013 c where c.province = p.id and c.seat = '{$r}')  order by p.id, p.votes desc";
+
+    try {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("year", $year);
         $stmt->execute();
         $items = $stmt->fetchAll(PDO::FETCH_OBJ);
         $db = null;
@@ -278,6 +304,7 @@ function getResults($race, $year, $constituency) {
                     from candidates2013 c
                     inner join parties p on c.partyid = p.party_id
                     WHERE c.province = :constituency and c.seat = 'National Assembly Party List'
+                    and c.listposition <= (select case when q.listseats is null then 6 else q.listseats end as listseats from vwprovinceresults q where q.party = p.party_name and q.id = :constituency and q.year = :year)
                     order by party, listposition";
             break;
 
@@ -297,6 +324,7 @@ function getResults($race, $year, $constituency) {
                     from candidates2013 c
                     inner join parties p on c.partyid = p.party_id
                     WHERE c.province = :constituency and c.seat = 'Senate Party List'
+                    and c.listposition <= (select case when q.listseats is null then 6 else q.listseats end as listseats from vwprovinceresults q where q.party = p.party_name and q.id = :constituency and q.year = :year)
                     order by party, listposition";
             }
             break;
@@ -321,17 +349,17 @@ function getSwing($race, $constituency) {
     switch($race)
     {
         case "president":
-            $sql = "select a.colour, a.name, a.percent as 2008Won, b.percent as 2013Won, b.percent - a.percent as swing from
-                (select r.party as name, r.colour, r.percent from vwpresidentresults r where id = :constituency and year = 2008 order by votes desc LIMIT 1) a
+            $sql = "select a.colour, a.name, a.percent as SwingTo, b.percent as SwingFrom, b.percent - a.percent as swing from
+                (select r.party as name, r.colour, r.percent from vwpresidentresults r where id = :constituency and year = 2013 order by votes desc LIMIT 1) a
                 join
-                (select r.party as name, r.colour, r.percent from vwpresidentresults r where id = :constituency and year = 2013 order by votes desc) b on a.name = b.name";
+                (select r.party as name, r.colour, r.percent from vwpresidentresults r where id = :constituency and year = 2008 order by votes desc) b on a.name = b.name";
             break;
         case "battleground":
         case "house":
-            $sql = "select a.colour, a.name, a.percent as 2008Won, b.percent as 2013Won, b.percent - a.percent as swing from
-                (select r.party as name, r.colour, r.percent from vwhouseresults r where id = :constituency and year = 2008 order by votes desc LIMIT 1) a
+            $sql = "select a.colour, a.name, a.percent as SwingTo, b.percent as SwingFrom, b.percent - a.percent as swing from
+                (select r.party as name, r.colour, r.percent from vwhouseresults r where id = :constituency and year = 2013 order by votes desc LIMIT 1) a
                 join
-                (select r.party as name, r.colour, r.percent from vwhouseresults r where id = :constituency and year = 2013 order by votes desc) b on a.name = b.name";
+                (select r.party as name, r.colour, r.percent from vwhouseresults r where id = :constituency and year = 2008 order by votes desc) b on a.name = b.name";
             break;
     }
 

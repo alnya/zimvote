@@ -17,8 +17,8 @@ if (!sokwanele) { var sokwanele = {}; }
 var tableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Constituency</th><th>% won</th><th>% turnout</th></tr></thead>" +
     "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{won}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>";
 
-var PRTableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Province</th><th>seats</th><th>% turnout</th></tr></thead>" +
-    "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{votes}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>";
+var PRTableTemplate = "{{#provinces}}<h3>{{name}}</h3><table class='resultstable'><thead><tr><th colspan='2' class='name'>Party</th><th>seats</th><th>% turnout</th></tr></thead>" +
+    "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{votes}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>{{/provinces}}";
 
 var tooltipTemplate = "<div class='tooltipview'><h3>{{name}}</h3><table class='resultstable'><thead><tr>" +
     "<th colspan='2' class='name'>Party</th><th>{{voteheading}}</th></tr></thead><tbody>{{#items}}<tr>" +
@@ -163,7 +163,7 @@ sokwanele.vote = function () {
             self.activeYear = self.map.getMapTypeId();
             $('h1').html('Zimbabwe Election ' + self.activeYear);
             $('#tabhouselist').css('display', (self.activeYear=='2013' ? 'block' : 'none') );
-            $('#tabbattleground').css('display', (self.activeYear=='2013' ? 'block' : 'none') );
+            $('#tabbattleground a').text((self.activeYear=='2013' ? 'margin' : 'battleground') );
             self.addConstituencies();
             self.drawChart();
         });
@@ -220,20 +220,55 @@ sokwanele.vote = function () {
 
         var colSize = e.data.length/3;
 
-        var col1Data = {items: e.data.slice(0, colSize) };
-        var col2Data = {items: e.data.slice(colSize, colSize * 2)};
-        var col3Data = {items: e.data.slice(colSize * 2, colSize * 3) };
+        if (self.isPR())
+        {
+            var provinces = [];
 
-        var template = (self.isPR()) ? PRTableTemplate : tableTemplate;
+            $.ajax({
+                type: 'GET',
+                url: 'api.php/results/pr/' + self.activeRace + '/' + self.activeYear,
+                dataType: "json",
+                success: function(e) {
+                    var province = '';
+                    var provinceresults = [];
 
-        $('#tablecolumn1').html(Mustache.render(template, col1Data));
-        $('#tablecolumn2').html(Mustache.render(template, col2Data));
-        $('#tablecolumn3').html(Mustache.render(template, col3Data));
+                    for (var i = 0; i < e.data.length; i++)
+                    {
+                        var row = e.data[i];
+                        if (row.province != province)
+                        {
+                            province = row.province;
+                            provinceresults = [];
+                            provinces.push({name: province, items: provinceresults});
+                        }
+                        provinceresults.push(row);
+                    }
 
-        $('.resultstable .name a').click(function(e){
-            self.getConstituencyResults($(this).attr('cid'), $(this).html(), $(this).attr('turnout'));
-            e.preventDefault();
-        });
+                    var col1Data = {provinces: provinces.slice(0, colSize) };
+                    var col2Data = {provinces: provinces.slice(colSize, colSize * 2)};
+                    var col3Data = {provinces: provinces.slice(colSize * 2, colSize * 3) };
+
+                    $('#tablecolumn1').html(Mustache.render(PRTableTemplate, col1Data));
+                    $('#tablecolumn2').html(Mustache.render(PRTableTemplate, col2Data));
+                    $('#tablecolumn3').html(Mustache.render(PRTableTemplate, col3Data));
+                }
+            });
+        }
+        else
+        {
+            var col1Data = {items: e.data.slice(0, colSize) };
+            var col2Data = {items: e.data.slice(colSize, colSize * 2)};
+            var col3Data = {items: e.data.slice(colSize * 2, colSize * 3) };
+
+            $('#tablecolumn1').html(Mustache.render(tableTemplate, col1Data));
+            $('#tablecolumn2').html(Mustache.render(tableTemplate, col2Data));
+            $('#tablecolumn3').html(Mustache.render(tableTemplate, col3Data));
+
+            $('.resultstable .name a').click(function(e){
+                self.getConstituencyResults($(this).attr('cid'), $(this).html(), $(this).attr('turnout'));
+                e.preventDefault();
+            });
+        }
     }
 
     this.addPolygon = function(c) {
@@ -310,15 +345,22 @@ sokwanele.vote = function () {
                             dataType: "json",
                             success: function(e) {
 
-                                // Create and populate the data table.
-                                var data = google.visualization.arrayToDataTable([
-                                    ['Label', 'Value'],
-                                    ['Swing', e.data.swing]
-                                ]);
+                                if (e.data.length > 0 && e.data[0].swing != null)
+                                {
+                                    var swing = parseFloat(e.data[0].swing);
+                                    var swingFrom = parseFloat(e.data[0].SwingFrom);
+                                    var swingTo = parseFloat(e.data[0].SwingTo);
 
-                                // Create and draw the visualization.
-                                new google.visualization.Gauge(document.getElementById('detailswing')).
-                                    draw(data, {width: 200, min: -25, max:25, redFrom: -10, redTo: 10, redColor: e.data.colour});
+                                    // Create and populate the data table.
+                                    var data = google.visualization.arrayToDataTable([
+                                        ['Label', 'Value'],
+                                        [ e.data[0].name + ' Swing', swing]
+                                    ]);
+
+                                    // Create and draw the visualization.
+                                    new google.visualization.Gauge(document.getElementById('detailswing')).
+                                        draw(data, {width: 200, min: -25, max:25, redFrom: -10, redTo: 10});
+                                }
                             }
                     });
                 }
