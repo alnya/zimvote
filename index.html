@@ -5,7 +5,7 @@
     <link type="text/css" rel="stylesheet" href="css/global.css"/>
     <link type="text/css" rel="stylesheet" href="css/tip-twitter/tip-twitter.css"/>
 
-    <script language="javascript" src="js/jquery-2.0.2.min.js"></script>
+    <script language="javascript" src="js/jquery-1.10.2.min.js"></script>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
     <script language="javascript" src="js/moustache.js"></script>
@@ -27,6 +27,21 @@
             </ol>
         </div>
         <div class="clearfix container content_frame">
+            <a href='#' id='helpbutton'><img src="css/img/help.jpeg" alt='Help' /></a>
+            <div id="helpoverlay">
+                <h2>How to use the map</h2>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse lectus ligula, convallis non
+                    faucibus non, congue sit amet tortor. Quisque fringilla metus lorem, quis venenatis tellus pulvinar in.
+                    Maecenas quis lorem nec leo ullamcorper posuere sed venenatis metus. Morbi quis neque venenatis,
+                    porttitor libero sit amet, facilisis augue. Donec eu lorem ultricies, tincidunt nibh et, semper enim.
+                    In velit sapien, sollicitudin vel eros at, varius vulputate urna. Integer arcu lectus,
+                    sollicitudin congue consectetur in, facilisis nec felis. Nam placerat neque nec purus lacinia vehicula.
+                    Maecenas at enim augue. Pellentesque quis erat eget ipsum consectetur molestie a ac diam.
+                    Vestibulum eu commodo sapien, sit amet imperdiet ante. Ut laoreet commodo neque vel porttitor.
+                </p>
+                <a href='#' id='closebutton'>Close</a>
+            </div>
             <div id="ResultsChart" class="clearfix container">
                 <!-- populated from AJAX call -->
             </div>
@@ -45,6 +60,16 @@
                         <div id="tablecolumn2" class="column"></div>
                         <div id="tablecolumn3" class="column"></div>
                     </div>
+                </div>
+                <div id="marginkey">
+                    <h3>Margin</h3>
+                    <ol>
+                        <li style='border-color: #CEEBEE'>more than 40%</li>
+                        <li style='border-color: #9DB3E0'>between 40% and 25%</li>
+                        <li style='border-color: #6C7BD3'>between 25% and 10%</li>
+                        <li style='border-color: #3B43C5'>between 10% and 5%</li>
+                        <li style='border-color: #0A0BB8'>less than 5%</li>
+                    </ol>
                 </div>
             </div>
             <div id="detail" class="clearfix">

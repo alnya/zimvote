@@ -1,0 +1,63 @@
+html, body
+{
+    background-color: #fff;
+    border: 0 none;
+    color: #333;
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    height: 100%;
+    margin: 0 8px;
+    margin-top:-10px;
+    padding: 0;
+    width: 100%;
+}
+
+.clearfix:after {
+    clear: both;
+    content: ".";
+    display: block;
+    height: 0;
+    visibility: hidden;
+}
+
+h1, h2, h3, legend
+{
+    font-family: Arial Black, Helvetica, Arial, sans-serif;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #A10000;
+}
+
+h1 {font-size: 230%;line-height: 120%; font-weight: bold; margin: 0; padding-top: 40px;}
+h2 {font-size: 20px;}
+
+#mapcontainer img {
+    width:92%;
+}
+
+.hasJS img.resp-t, .hasJS img.resp-d {
+    display: none;
+}
+
+@media screen and (min-width: 600px) {
+    .hasJS img.resp {
+        display: none;
+    }
+
+    #mapcontainer {width:60%; float:left; margin-right:16px;}
+    #itemscontainer {width:30%; float:left; }
+}
+
+@media screen and (min-width: 600px) and (max-width: 1007px) {
+    .hasJS img.resp-t {
+        display: block;
+    }
+}
+
+@media screen and (min-width: 1008px) {
+    .hasJS img.resp-d {
+        display: block;
+    }
+
+    #mapcontainer {width:600px; height:400px; float:left; margin-right:16px;}
+}

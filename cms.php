@@ -1,13 +1,14 @@
 <?php
 ini_set('auto_detect_line_endings', true);
+include 'conn.php';
 
 $csv = array();
 //connect to the database
 //$connect = mysql_connect("127.0.0.1","dev","password");
 //mysql_select_db("sokwanele",$connect); //select the table
 
-$connect = mysql_connect("localhost","willia13_sokdb","bCCIB08OGpAzkwFW9FNE");
-mysql_select_db("willia13_votemap",$connect); //select the table
+$connect = mysql_connect($dbhost,$dbuser,$dbpass);
+mysql_select_db($dbname,$connect); //select the table
 
 // QUERY TO GENERATE CSV
 //select r.constit_id, r.mp_id, concat(m.mp_firstname, ' ', m.mp_surname) as name, p.party_name as party, c.constit_name as constituency, c.province, r.zec_votes as votes

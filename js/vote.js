@@ -17,6 +17,9 @@ if (!sokwanele) { var sokwanele = {}; }
 var tableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Constituency</th><th>% won</th><th>% turnout</th></tr></thead>" +
     "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{won}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>";
 
+var marginTableTemplate = "<table class='resultstable'><thead><tr><th colspan='2' class='name'>Constituency</th><th>% margin</th><th>% turnout</th></tr></thead>" +
+    "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{won}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>";
+
 var PRTableTemplate = "{{#provinces}}<h3>{{name}}</h3><table class='resultstable'><thead><tr><th colspan='2' class='name'>Party</th><th>seats</th><th>% turnout</th></tr></thead>" +
     "<tbody>{{#items}}<tr><td class='partytag' style='background:{{colour}}'></td><td class='name'><a href='#' turnout='{{turnout}}' cid='{{id}}'>{{name}}</a></td><td class='val'>{{votes}}</td><td class='val'>{{turnout}}</td></tr>{{/items}}</tbody></table>{{/provinces}}";
 
@@ -30,7 +33,7 @@ var tooltipBG = "<div class='tooltipview'><h3>{{name}}</h3><h4>{{margin}}% margi
     "<td class='partytag' style='background:{{colour}}'></td><td class='name'>{{name}}</td>" +
     "<td class='val'>{{votes}}</td></tr>{{/items}}</tbody></table></div>";
 
-var detailTemplate = "<div id='detailchart'></div><div id='detailswing'></div><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4>" +
+var detailTemplate = "<div id='detailchart'></div><img id='detailswing'/><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4>" +
     "<table class='detailtable'><tbody>{{#items}}"+
     "<tr><td class='partytag' style='background:{{colour}}'></td><td>{{name}}</td><td>{{party}}</td>"+
     "<td>{{votes}}</td><td>{{percent}}</td></tr>{{/items}}</tbody></table>";
@@ -41,7 +44,7 @@ var detailTemplate = "<div id='detailchart'></div><div id='detailswing'></div><h
 sokwanele.vote = function () {
     var self = this;
     this.map = null;
-    this.debugErrors = true; // debug
+    this.debugErrors = false; // debug
     this.activeRace = 'president';
     this.activeYear = '2008';
     this.polygons = new Array();
@@ -51,7 +54,7 @@ sokwanele.vote = function () {
 
     this.init = function () {
         self.debug("init");
-        google.load("visualization", "1", {packages:["corechart", "gauge"]});
+        google.load("visualization", "1", {packages:["corechart"]});
         google.maps.event.addDomListener(window, 'load', self.initMap);
         google.setOnLoadCallback(self.drawChart);
 
@@ -61,6 +64,8 @@ sokwanele.vote = function () {
     this.ready = function () {
         self.debug("jquery ready");
         self.initTabs();
+        $("#helpbutton").click(function (e) { $('#helpoverlay').show();});
+        $("#closebutton").click(function (e) { $('#helpoverlay').hide();});
     };
 
     this.commaSeparateNumber = function(val){
@@ -79,6 +84,8 @@ sokwanele.vote = function () {
             self.addConstituencies();
             self.drawChart();
             $('#detail').html('');
+            $('#marginkey').css('display', (self.activeRace=='battleground' ? 'block' : 'none') );
+
         });
 
         $("#StagePicker li a").click(function (e) {
@@ -260,9 +267,11 @@ sokwanele.vote = function () {
             var col2Data = {items: e.data.slice(colSize, colSize * 2)};
             var col3Data = {items: e.data.slice(colSize * 2, colSize * 3) };
 
-            $('#tablecolumn1').html(Mustache.render(tableTemplate, col1Data));
-            $('#tablecolumn2').html(Mustache.render(tableTemplate, col2Data));
-            $('#tablecolumn3').html(Mustache.render(tableTemplate, col3Data));
+            var template = (self.activeRace=='battleground') ? marginTableTemplate : tableTemplate;
+
+            $('#tablecolumn1').html(Mustache.render(template, col1Data));
+            $('#tablecolumn2').html(Mustache.render(template, col2Data));
+            $('#tablecolumn3').html(Mustache.render(template, col3Data));
 
             $('.resultstable .name a').click(function(e){
                 self.getConstituencyResults($(this).attr('cid'), $(this).html(), $(this).attr('turnout'));
@@ -347,19 +356,10 @@ sokwanele.vote = function () {
 
                                 if (e.data.length > 0 && e.data[0].swing != null)
                                 {
-                                    var swing = parseFloat(e.data[0].swing);
-                                    var swingFrom = parseFloat(e.data[0].SwingFrom);
-                                    var swingTo = parseFloat(e.data[0].SwingTo);
-
-                                    // Create and populate the data table.
-                                    var data = google.visualization.arrayToDataTable([
-                                        ['Label', 'Value'],
-                                        [ e.data[0].name + ' Swing', swing]
-                                    ]);
-
-                                    // Create and draw the visualization.
-                                    new google.visualization.Gauge(document.getElementById('detailswing')).
-                                        draw(data, {width: 200, min: -25, max:25, redFrom: -10, redTo: 10});
+                                    var swing = 50 - parseFloat(e.data[0].swing);
+                                    $('#detailswing').attr('src',
+                                        'https://chart.googleapis.com/chart?chs=200x150&cht=gom&chd=t:' + swing +
+                                        '&chl=' + e.data[0].swing + '% swing');
                                 }
                             }
                     });

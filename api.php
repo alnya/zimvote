@@ -145,12 +145,12 @@ function getConstituencies($race, $year) {
                 ORDER BY constit_name";
             break;
         case "battleground":
-            $sql = "select id, name, voters, region_id, geometry, turnout, won, margin,
+            $sql = "select id, name, voters, region_id, geometry, turnout, margin as won, margin,
                 case
-                    when margin > 40  then '#CEEBEE'
-                    when margin < 40 and margin > 25 then '#9DB3E0'
-                    when margin < 25 and margin > 10 then '#6C7BD3'
-                    when margin < 10 and margin > 5 then '#3B43C5'
+                    when margin >= 40  then '#CEEBEE'
+                    when margin < 40 and margin >= 25 then '#9DB3E0'
+                    when margin < 25 and margin >= 10 then '#6C7BD3'
+                    when margin < 10 and margin >= 5 then '#3B43C5'
                     when margin < 5 then '#0A0BB8'
                 end as colour
                 from (select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
@@ -160,7 +160,7 @@ function getConstituencies($race, $year) {
                 CEIL(((SELECT a.zec_votes FROM house_results a where a.zec_votes > 0 and a.constit_id = c.constit_id AND a.year = :year ORDER BY a.zec_votes DESC LIMIT 1) / v.votes) * 100) - CEIL(((SELECT b.zec_votes FROM house_results b where b.zec_votes < (SELECT a.zec_votes FROM house_results a where a.zec_votes > 0 and a.constit_id = c.constit_id AND a.year = 2008 ORDER BY a.zec_votes DESC LIMIT 1) and b.constit_id = c.constit_id AND b.year = 2008 ORDER BY b.zec_votes DESC LIMIT 1) / v.votes) * 100) as margin
                 from constituencies c inner join constituencykml k on c.constit_name = k.constituency
                 left outer join (SELECT q.constit_id, SUM(q.zec_votes) as votes FROM house_results q WHERE q.year = :year GROUP BY q.constit_id) v on v.constit_id = c.constit_id
-                ORDER BY constit_name) g";
+                ORDER BY constit_name) g order by margin asc";
             break;
         case "house":
             $sql = "select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
@@ -437,12 +437,7 @@ function deleteCandidate($id) {
 
 // database setup
 function getConnection() {
-    // DEV
-    $dbhost="127.0.0.1";
-    $dbuser="dev";
-    $dbpass="password";
-    $dbname="sokwanele";
-
+    include 'conn.php';
     $dbh = new PDO("mysql:host=$dbhost;dbname=$dbname", $dbuser, $dbpass);
     $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     return $dbh;
