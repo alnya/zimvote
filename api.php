@@ -137,7 +137,7 @@ function getConstituencies($race, $year) {
             $sql = "select c.constit_id as id, c.constit_name as name, c.registered_voters as voters, c.region_id, k.geometry,
                 CEIL((v.votes / c.registered_voters) * 100) as turnout,
                 (SELECT p.colour FROM presidential_results r join mps m on r.mp_id = m.mp_id join parties p on
-                p.party_id = m.party_id where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) as colour,
+                p.party_id = m.party_id where r.constit_id = c.constit_id AND r.year = :year and r.zec_votes > 0 ORDER BY r.zec_votes DESC LIMIT 1) as colour,
                 CEIL(((SELECT r.zec_votes FROM presidential_results r where r.constit_id = c.constit_id AND r.year = :year ORDER BY r.zec_votes DESC LIMIT 1) / v.votes) * 100) as won
                 from constituencies c
                 inner join constituencykml k on c.constit_name = k.constituency

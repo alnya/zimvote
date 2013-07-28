@@ -33,7 +33,7 @@ var tooltipBG = "<div class='tooltipview'><h3>{{name}}</h3><h4>{{margin}}% margi
     "<td class='partytag' style='background:{{colour}}'></td><td class='name'>{{name}}</td>" +
     "<td class='val'>{{votes}}</td></tr>{{/items}}</tbody></table></div>";
 
-var detailTemplate = "<div id='detailchart'></div><img id='detailswing'/><h3>{{name}}</h3><h4>Turnout: {{turnout}}%</h4>" +
+var detailTemplate = "<div id='detailchart'></div><img id='detailswing'/><h3><a href='http://www.sokwanele.com/zimbabwe-elections/constituency/{{name}}'>{{name}}</a></h3><h4>Turnout: {{turnout}}%</h4>" +
     "<table class='detailtable'><tbody>{{#items}}"+
     "<tr><td class='partytag' style='background:{{colour}}'></td><td>{{name}}</td><td>{{party}}</td>"+
     "<td>{{votes}}</td><td>{{percent}}</td></tr>{{/items}}</tbody></table>";
@@ -45,7 +45,7 @@ sokwanele.vote = function () {
     var self = this;
     this.map = null;
     this.debugErrors = false; // debug
-    this.activeRace = 'president';
+    this.activeRace = 'battleground';
     this.activeYear = '2008';
     this.polygons = new Array();
     this.defaultColor = '#999999';

@@ -1,5 +1,9 @@
 <?php
 
+//UPDATE pollingstations SET latitude = CONVERT(substring_index(replace(replace(geometry,'<Point><coordinates>',''),',0.0</coordinates></Point>',''),',',1), DECIMAL(10,6)),
+//longitude = CONVERT(substring_index(replace(replace(geometry,'<Point><coordinates>',''),',0.0</coordinates></Point>',''),',',-1), DECIMAL(10,6))
+//where geometry != ''
+
 require 'Slim/Slim.php';
 \Slim\Slim::registerAutoloader();
 $app = new \Slim\Slim();
@@ -14,6 +18,7 @@ $app->get('/:province/:constituency/:ward',  'getWard');
 
 $app->hook('slim.before', function () use ($app) {
     $app->view()->appendData(array('baseUrl' => 'http://localhost/~wilsor27/zimvote/'));
+    //$app->view()->appendData(array('baseUrl' => 'http://www.sokwanele.com/zimbabwe-elections/'));
 });
 
 // end define routes

@@ -14,7 +14,7 @@
     <link type="text/css" rel="stylesheet" href="<?=$baseUrl?>/css/polling.css"/>
 </head>
 <body>
-    <h1>Polling Stations</h1>
+    <h1><a href="<?=$baseUrl?>/polling.php">Polling Stations</a></h1>
     <h2>
         <a href='<?=$baseUrl?>/polling.php/<?= $province ?>'><?= $province ?></a>
     </h2>

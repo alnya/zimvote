@@ -65,13 +65,20 @@ sokwanele.polling = function () {
             }
         );
         var bounds = new google.maps.LatLngBounds();
+        var infowindow = new google.maps.InfoWindow();
+
         for (var i = 0; i < points.length; i++)
         {
             var loc = new google.maps.LatLng(points[i][1],points[i][2]);
             var marker = new google.maps.Marker({
                 position: loc,
                 map: map,
+                icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + (i+1) + '|FF776B|000000',
                 title: points[i][0]
+            });
+            google.maps.event.addListener(marker, 'click', function() {
+                infowindow.setContent(this.title);
+                infowindow.open(map, this);
             });
             bounds.extend(loc);
         }

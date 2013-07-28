@@ -31,6 +31,14 @@ h1, h2, h3, legend
 h1 {font-size: 230%;line-height: 120%; font-weight: bold; margin: 0; padding-top: 40px;}
 h2 {font-size: 20px;}
 
+a {color: #A10000; padding:8px 4px;}
+a:hover {background: #A10000; color:#fff; text-decoration: none;}
+
+select, p, li {
+    font-size: 18px;
+    font-size: 1.8rem;
+}
+
 #mapcontainer img {
     width:92%;
 }
@@ -52,11 +60,21 @@ h2 {font-size: 20px;}
     .hasJS img.resp-t {
         display: block;
     }
+
+    select, p, li {
+        font-size: 24px;
+        font-size: 2.4rem;
+    }
 }
 
 @media screen and (min-width: 1008px) {
     .hasJS img.resp-d {
         display: block;
+    }
+
+    select, p, li {
+        font-size: 13px;
+        font-size: 1.3rem;
     }
 
     #mapcontainer {width:600px; height:400px; float:left; margin-right:16px;}
