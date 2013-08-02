@@ -199,7 +199,7 @@ function getJSMapPoints($items) {
         {
             $name = addslashes($item->pollingstation);
             if (strlen($points) > 0) { $points.=','; }
-            $points.="['{$name}',{$item->longitude},{$item->latitude}]";
+            $points.="[($i+1), '{$name}',{$item->longitude},{$item->latitude}]";
         }
     }
 

@@ -24,7 +24,7 @@
             <? } ?>
         </select>
     </form>
-    <script language="javascript" src="<?=$baseUrl?>/js/polling.js"></script>
+    <script language="javascript" src="<?=$baseUrl?>/js/polling.min.js"></script>
     <script language="javascript">polling.getLocation();</script>
 </body>
 </html>

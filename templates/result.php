@@ -70,7 +70,7 @@ $tabletUrl = "http://maps.googleapis.com/maps/api/staticmap?size=600x400{$points
             </select>
         </form>
     <? } ?>
-    <script language="javascript" src="<?=$baseUrl?>/js/polling.js"></script>
+    <script language="javascript" src="<?=$baseUrl?>/js/polling.min.js"></script>
 
 </body>
 </html>

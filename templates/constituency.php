@@ -28,6 +28,6 @@
             <? } ?>
         </select>
     </form>
-    <script language="javascript" src="<?=$baseUrl?>/js/polling.js"></script>
+    <script language="javascript" src="<?=$baseUrl?>/js/polling.min.js"></script>
 </body>
 </html>

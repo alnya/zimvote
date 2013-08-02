@@ -20,6 +20,14 @@ html, body
     visibility: hidden;
 }
 
+#nav {position:absolute; right:100px; top:20px;}
+
+#nav li {float:left; list-style: none;}
+#nav li:after {content:'|'; margin:8px;}
+#nav li:last-child:after {content:'';}
+
+#nav li a {color: #A10000; text-decoration: none; font-size:16px;}
+
 #wrapborder {
     margin: 0 auto;
     width: 980px;
@@ -31,6 +39,7 @@ html, body
 {
     height: 119px;
     position: relative;
+    background:url(img/sok-map-logo.png) right bottom no-repeat;
 }
 
 #ResultsChart
@@ -101,7 +110,7 @@ h3 {font-size: 16px; color:#A10000; margin:0px }
     padding-right:1px;
 }
 
-#Tabs #tabhouselist {
+#marginkey {
     display: none;
 }
 
@@ -241,7 +250,6 @@ h3 {font-size: 16px; color:#A10000; margin:0px }
     top: 300px;
     width: 100px;
     padding:5px;
-    display: none;
 }
 #marginkey ol
 {

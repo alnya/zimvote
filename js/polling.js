@@ -69,12 +69,12 @@ sokwanele.polling = function () {
 
         for (var i = 0; i < points.length; i++)
         {
-            var loc = new google.maps.LatLng(points[i][1],points[i][2]);
+            var loc = new google.maps.LatLng(points[i][2],points[i][3]);
             var marker = new google.maps.Marker({
                 position: loc,
                 map: map,
-                icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + (i+1) + '|FF776B|000000',
-                title: points[i][0]
+                icon: 'http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=' + points[i][0] + '|FF776B|000000',
+                title: points[i][1]
             });
             google.maps.event.addListener(marker, 'click', function() {
                 infowindow.setContent(this.title);

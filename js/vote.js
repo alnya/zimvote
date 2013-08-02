@@ -45,8 +45,8 @@ sokwanele.vote = function () {
     var self = this;
     this.map = null;
     this.debugErrors = false; // debug
-    this.activeRace = 'battleground';
-    this.activeYear = '2008';
+    this.activeRace = 'house';
+    this.activeYear = '2013';
     this.polygons = new Array();
     this.defaultColor = '#999999';
     this.constituencies = new Array();
@@ -110,7 +110,18 @@ sokwanele.vote = function () {
                     var voteColors = [];
                     var valueArray = [self.activeRace == 'president' ? 'Votes' : 'Seats'];
                     $.each(e.data, function(i, item) {
-                        headingArray.push(item.name + (self.activeRace == 'president' ? ' (' + item.percent + '%)' : ''));
+                        if (item.percent == null) {item.percent = 0;}
+                        var n = item.name;
+                        if ((self.activeRace == 'president'))
+                        {
+                            n = item.name + ' (' + item.percent + '%)';
+                        }
+                        if ((self.activeRace == 'house' && self.activeYear == '2013') || self.isPR())
+                        {
+                            n = item.name + ' (' + item.votes + ')';
+                        }
+
+                        headingArray.push(n);
                         valueArray.push(parseInt(item.votes));
                         if (item.colour){
                             voteColors.push(item.colour);
@@ -354,12 +365,14 @@ sokwanele.vote = function () {
                             dataType: "json",
                             success: function(e) {
 
-                                if (e.data.length > 0 && e.data[0].swing != null)
+                                if (e.data.swing != null)
                                 {
-                                    var swing = 50 - parseFloat(e.data[0].swing);
+                                    var fromColor = e.data.fromcolor.replace('#','');
+                                    var toColour = e.data.tocolour.replace('#','');
+                                    var swing = 50 + parseFloat(e.data.swing);
                                     $('#detailswing').attr('src',
                                         'https://chart.googleapis.com/chart?chs=200x150&cht=gom&chd=t:' + swing +
-                                        '&chl=' + e.data[0].swing + '% swing');
+                                        '&chco=' + fromColor + ',' + toColour + '&chl=' + e.data.swing + '% swing');
                                 }
                             }
                     });

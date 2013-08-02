@@ -67,7 +67,7 @@ $tabletUrl = "http://maps.googleapis.com/maps/api/staticmap?size=600x400{$points
         Polling Station <span style='color:blue'>0391</span> (Tent in Open Space Cr Mabvazuva-Chaminuka Rds in Harare)</p>
        </p>
     </div>
-    <script language="javascript" src="<?=$baseUrl?>/js/polling.js"></script>
+    <script language="javascript" src="<?=$baseUrl?>/js/polling.min.js"></script>
 
 </body>
 </html>

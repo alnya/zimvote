@@ -11,23 +11,25 @@
     <script language="javascript" src="js/moustache.js"></script>
     <script language="javascript" src="js/jquery.poshytip.min.js"></script>
     <script language="javascript" src="js/vote.js"></script>
-
-    <script language="javascript" src="fixtures/regions.json"></script>
 </head>
 <body>
     <div id="wrapborder">
         <div id="header">
             <h1>Zimbabwe Election 2013</h1>
+            <ol id='nav'>
+                <li><a href='http://sokwanele.com' target='_blank'>home</a></li>
+            <!--    <li><a href='http://sokwanele.com/zimbabwe-elections/2013' target='_blank'>election hub</a></li> -->
+            </ol>
             <ol id="Tabs" class="clearfix container">
                 <li id='tabpresident'><a href="#president">President</a></li>
-                <li id='tabhouse'><a href="#house">House</a></li>
+                <li id='tabhouse'><a class="active" href="#house">House</a></li>
                 <li id='tabsenate'><a href="#senate">Senate</a></li>
                 <li id='tabhouselist'><a href="#houselist">House List</a></li>
-                <li id='tabbattleground'><a class="active" href="#battleground">Battleground</a></li>
+                <li id='tabbattleground'><a href="#battleground">Battleground</a></li>
             </ol>
         </div>
         <div class="clearfix container content_frame">
-            <a href='#' id='helpbutton'><img src="css/img/help.jpeg" alt='Help' /></a>
+            <a href='#' id='helpbutton'><img src="css/img/help.jpeg" alt='Help' border='none' /></a>
             <div id="helpoverlay">
                 <h2>How to use the map</h2>
                 <p>
